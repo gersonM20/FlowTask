@@ -1,18 +1,36 @@
+/**
+ * hooks/useDebounce.js — Retrasa la actualización de un valor
+ *
+ * Problema que resuelve:
+ *  Sin debounce, cada pulsación de tecla en el buscador lanzaría una petición
+ *  a la API. Con debounce, la petición solo se lanza cuando el usuario deja de
+ *  escribir durante `delay` milisegundos.
+ *
+ * Funcionamiento:
+ *  1. Cada vez que `value` cambia, se programa un setTimeout
+ *  2. Si `value` vuelve a cambiar antes de que pase `delay`, el timer
+ *     anterior se cancela (clearTimeout) y se crea uno nuevo
+ *  3. Solo cuando el usuario deja de escribir, el setTimeout completa
+ *     y actualiza el valor debounced
+ *
+ * Uso:
+ *  const debouncedSearch = useDebounce(searchText, 400);
+ *  // debouncedSearch se actualiza 400ms después del último cambio
+ *
+ * @param {any}    value - Valor a "debouncear"
+ * @param {number} delay - Milisegundos de espera (defecto: 400)
+ * @returns {any} El valor retrasado
+ */
+
 import { useState, useEffect } from "react";
 
-// Hook de debounce: retrasa la actualización del valor hasta que el usuario
-// deje de escribir durante `delay` milisegundos.
-// Se usa en la barra de búsqueda para no lanzar una petición a la API
-// en cada pulsación de tecla, sino solo cuando el usuario hace una pausa.
 export function useDebounce(value, delay = 400) {
   const [debounced, setDebounced] = useState(value);
 
   useEffect(() => {
-    // Programamos la actualización del valor
     const timer = setTimeout(() => setDebounced(value), delay);
 
-    // Si el valor cambia antes de que pase el delay, cancelamos el timer anterior
-    // y empezamos uno nuevo (esto es el "debounce")
+    // La función de limpieza cancela el timer si value cambia antes de que expire
     return () => clearTimeout(timer);
   }, [value, delay]);
 

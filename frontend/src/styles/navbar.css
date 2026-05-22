@@ -1,57 +1,126 @@
+/* ═══════════════════════════════════════════════════════════
+   Navbar — barra de navegación superior
+   ═══════════════════════════════════════════════════════════
+   Sticky en la parte superior (z-index 100) para que siempre
+   sea visible al hacer scroll. La altura --navbar-h (56px) se
+   define en variables.css y la consume side-form para su
+   posicionamiento sticky.
+   ═══════════════════════════════════════════════════════════ */
 .navbar {
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
-  padding: 0 var(--space-6);
-  height: 60px;
+  height: var(--navbar-h);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  padding: 0 var(--space-6);
+  gap: var(--space-8);
   position: sticky;
   top: 0;
-  z-index: 100;
-  box-shadow: var(--shadow-sm);
+  z-index: 100; /* sobre tarjetas y contenido pero bajo el modal (z-index 200) */
+  box-shadow: var(--shadow-xs);
 }
 
+/* ─── Marca / logo ───────────────────────────────────────────────────────── */
 .navbar__brand {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  font-size: var(--font-size-base);
   font-weight: 700;
-  font-size: 1.125rem;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  flex-shrink: 0; /* no se comprime cuando el nav ocupa más espacio */
 }
 
-.navbar__brand-icon {
-  width: 32px;
-  height: 32px;
+/* Cuadrado azul con la letra "T" — marcador de la aplicación */
+.navbar__brand-mark {
+  width: 28px;
+  height: 28px;
   background: var(--color-primary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   display: grid;
   place-items: center;
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
+/* ─── Navegación ─────────────────────────────────────────────────────────── */
+.navbar__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1; /* ocupa el espacio entre la marca y las acciones */
+}
+
+.navbar__nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: background var(--transition), color var(--transition);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+.navbar__nav-link:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+
+/* Estado activo: fondo azul claro + texto primario */
+.navbar__nav-link--active {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* En oscuro el texto activo cambia a azul claro para mayor contraste */
+html.dark .navbar__nav-link--active {
+  background: var(--color-primary-light);
+  color: #60a5fa;
+}
+
+/* ─── Acciones (toggle de tema) ──────────────────────────────────────────── */
 .navbar__actions {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
+  margin-left: auto; /* empuja al extremo derecho */
 }
 
-.navbar__dark-toggle {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-full);
+/* Botón icono genérico (reservado para futuros botones de acción) */
+.navbar__icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border);
   background: var(--bg-muted);
   color: var(--text-muted);
-  font-size: 1rem;
+  font-size: 0.875rem;
   display: grid;
   place-items: center;
   transition: background var(--transition), color var(--transition);
 }
 
-.navbar__dark-toggle:hover {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
+.navbar__icon-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border-color: var(--border-strong);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+/* En móvil se oculta el texto de los nav-links para que quepan los íconos */
+@media (max-width: 640px) {
+  .navbar { padding: 0 var(--space-4); gap: var(--space-4); }
+  .navbar__nav-link span { display: none; }
 }

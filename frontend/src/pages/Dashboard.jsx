@@ -1,88 +1,87 @@
-import { useState, useEffect } from "react";
+/**
+ * pages/Dashboard.jsx — Vista principal con KPIs y lista de tareas
+ *
+ * Orquesta tres fuentes de datos:
+ *  1. useTasks(activeFilters)  — lista de tareas filtrada + mutaciones
+ *  2. useTaskStats()           — conteos KPI (se refresca tras cada mutación)
+ *  3. useCategories()          — para el select del formulario y los filtros
+ *  4. useUsers() (inline)      — para el select de asignación del formulario
+ *
+ * Flujo de búsqueda con debounce:
+ *   [input] → search → useDebounce(400ms) → debouncedSearch → activeFilters
+ *   Solo cuando el usuario deja de escribir 400 ms se envía la petición GET.
+ *
+ * Manejo de modal:
+ *  - showForm + editTask=null  → crear tarea nueva
+ *  - showForm + editTask=obj   → editar tarea existente
+ *
+ * Para extender:
+ *  - Agregar paginación: pasar page/pageSize a useTasks y mostrar controles
+ *  - Agregar ordenamiento: botones en la toolbar que cambian un campo sort
+ *  - Extraer useUsers a hooks/useUsers.js si se reutiliza en más páginas
+ */
 
+import { useState, useEffect } from "react";
 import StatsCard   from "../components/StatsCard.jsx";
 import SearchBar   from "../components/SearchBar.jsx";
 import TaskFilters from "../components/TaskFilters.jsx";
 import TaskCard    from "../components/TaskCard.jsx";
 import TaskForm    from "../components/TaskForm.jsx";
-
 import { useTasks, useTaskStats } from "../hooks/useTasks.js";
 import { useCategories }          from "../hooks/useCategories.js";
 import { useDebounce }            from "../hooks/useDebounce.js";
 import { usersApi }               from "../services/api.js";
-
 import "../styles/dashboard.css";
 
-// Mini-hook local para usuarios: lo definimos aquí en lugar de un archivo separado
-// porque solo se usa en esta página y no justifica un archivo propio.
+/**
+ * Hook local para cargar la lista de usuarios.
+ * Se define aquí porque solo se necesita en las páginas con TaskForm.
+ * Si se reutiliza, moverlo a hooks/useUsers.js.
+ */
 function useUsers() {
   const [users,   setUsers]   = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    usersApi.getAll()
-      .then(setUsers)
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    usersApi.getAll().then(setUsers).catch(console.error).finally(() => setLoading(false));
   }, []);
-
   return { users, loading };
 }
 
-// Página principal del dashboard.
-// Orquesta todos los componentes y hooks: stats, filtros, lista de tareas y modal.
 export default function Dashboard() {
-  // Estado del texto de búsqueda (sin debounce, se actualiza en cada tecla)
   const [search,   setSearch]   = useState("");
-  // Estado de los filtros desplegables (status, priority, category_id)
   const [filters,  setFilters]  = useState({});
-  // Controla la visibilidad del modal de crear/editar
   const [showForm, setShowForm] = useState(false);
-  // Si tiene valor, el modal está en modo edición; si es null, en modo creación
   const [editTask, setEditTask] = useState(null);
 
-  // Aplicamos debounce al texto de búsqueda para no llamar a la API en cada pulsación
   const debouncedSearch = useDebounce(search, 400);
 
-  // Combinamos los filtros de los selects con el texto de búsqueda debounced
+  // Combina filtros de los selects con la búsqueda de texto
+  // Si no hay búsqueda, no se incluye el campo para evitar parámetro vacío
   const activeFilters = {
     ...filters,
     ...(debouncedSearch ? { search: debouncedSearch } : {}),
   };
 
-  // Hook principal: carga tareas cada vez que cambian los filtros activos
-  const {
-    tasks, loading: tasksLoading, error: tasksError,
-    createTask, updateTask, deleteTask,
-  } = useTasks(activeFilters);
-
-  // Hook separado para los KPIs: se refresca manualmente tras crear/editar/borrar
+  const { tasks, loading: tasksLoading, error: tasksError, createTask, updateTask, deleteTask } = useTasks(activeFilters);
   const { stats, loading: statsLoading, refetch: refetchStats } = useTaskStats();
-
   const { categories } = useCategories();
   const { users }      = useUsers();
 
-  // ─── Handlers ────────────────────────────────────────────────────────────
-
-  // Guarda una tarea nueva o actualizada y refresca los KPIs del header
+  /** Crea o actualiza según si hay una tarea en edición, luego refresca los KPIs */
   const handleSave = async (data) => {
-    if (editTask) {
-      await updateTask(editTask.id, data);
-    } else {
-      await createTask(data);
-    }
-    refetchStats(); // los conteos pueden haber cambiado
+    if (editTask) await updateTask(editTask.id, data);
+    else          await createTask(data);
+    refetchStats();
   };
 
-  // Pide confirmación antes de eliminar (window.confirm es suficiente para un portafolio)
   const handleDelete = async (id) => {
     if (!window.confirm("¿Eliminar esta tarea?")) return;
     await deleteTask(id);
     refetchStats();
   };
 
-  // Alterna entre "completed" y "pending" con un solo clic
-  const handleToggleStatus = async (task) => {
+  /** Alterna entre "completed" y "pending" con un solo clic */
+  const handleToggle = async (task) => {
     const next = task.status === "completed" ? "pending" : "completed";
     await updateTask(task.id, { status: next });
     refetchStats();
@@ -91,49 +90,48 @@ export default function Dashboard() {
   const openEdit  = (task) => { setEditTask(task); setShowForm(true); };
   const closeForm = ()     => { setShowForm(false); setEditTask(null); };
 
-  // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <section aria-label="Dashboard de tareas">
-      <h1 style={{
-        fontSize: "1.5rem",
-        fontWeight: 700,
-        marginBottom: "var(--space-6)",
-        color: "var(--text-primary)",
-      }}>
-        Dashboard
-      </h1>
-
-      {/* Fila de tarjetas KPI */}
-      <StatsCard stats={stats} loading={statsLoading} />
-
-      {/* Barra de herramientas: búsqueda + filtros + botón nueva tarea */}
-      <div className="dashboard-toolbar">
-        <SearchBar value={search} onChange={setSearch} />
-        <TaskFilters
-          filters={filters}
-          categories={categories}
-          onFilter={setFilters}
-          onAdd={() => { setEditTask(null); setShowForm(true); }}
-        />
+    <section>
+      <div className="page-header">
+        <div className="page-header__text">
+          <h1 className="page-title">Dashboard</h1>
+          <p className="page-subtitle">Resumen general de tareas</p>
+        </div>
+        <button className="btn btn--primary" onClick={() => { setEditTask(null); setShowForm(true); }}>
+          + Nueva tarea
+        </button>
       </div>
 
-      {/* Banner de error si la carga de tareas falla */}
-      {tasksError && (
-        <div className="error-message" style={{ marginBottom: "var(--space-4)" }}>
-          Error al cargar las tareas: {tasksError}
-        </div>
-      )}
+      {/* Fila de KPIs — se refrescan después de cada mutación */}
+      <StatsCard stats={stats} loading={statsLoading} />
 
-      {/* Lista de tareas con tres estados posibles: cargando / vacío / con datos */}
+      {/* Toolbar: búsqueda + filtros + botón limpiar (condicional) */}
+      <div className="dashboard-toolbar">
+        <SearchBar value={search} onChange={setSearch} placeholder="Buscar tareas…" />
+        <TaskFilters filters={filters} categories={categories} onFilter={setFilters} />
+        <div className="dashboard-toolbar__spacer" />
+        {/* Solo aparece cuando hay al menos un filtro activo */}
+        {(filters.status || filters.priority || filters.category_id || search) && (
+          <button
+            className="btn btn--ghost btn--sm"
+            onClick={() => { setFilters({}); setSearch(""); }}
+          >
+            Limpiar filtros
+          </button>
+        )}
+      </div>
+
+      {/* Error de red — no bloquea la UI, solo informa */}
+      {tasksError && <p className="error-banner" style={{ marginBottom: "var(--space-4)" }}>{tasksError}</p>}
+
+      {/* Estados: cargando / vacío / lista */}
       {tasksLoading ? (
-        <div className="loading-screen">
-          <div className="spinner" />
-          <span>Cargando tareas…</span>
-        </div>
+        <div className="loading-screen"><div className="spinner" /><span>Cargando tareas…</span></div>
       ) : tasks.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state__icon">📋</div>
-          <p>No se encontraron tareas. Ajusta los filtros o crea una nueva.</p>
+          <div className="empty-state__icon">≡</div>
+          <h3 style={{ fontWeight: 600, color: "var(--text-secondary)", marginBottom: "var(--space-1)" }}>Sin resultados</h3>
+          <p>No hay tareas con los filtros seleccionados.</p>
         </div>
       ) : (
         <div className="task-list" role="list">
@@ -143,13 +141,13 @@ export default function Dashboard() {
               task={task}
               onEdit={openEdit}
               onDelete={handleDelete}
-              onToggleStatus={handleToggleStatus}
+              onToggleStatus={handleToggle}
             />
           ))}
         </div>
       )}
 
-      {/* Modal de crear/editar: solo se monta cuando showForm es true */}
+      {/* Modal de creación/edición — se monta solo cuando showForm es true */}
       {showForm && (
         <TaskForm
           task={editTask}

@@ -1,0 +1,160 @@
+/* ═══════════════════════════════════════════════════════════
+   Management — estilos compartidos para UsersPage y CategoriesPage
+   ═══════════════════════════════════════════════════════════
+   Layout de dos columnas: tabla (flexible) + formulario lateral
+   (ancho fijo 360px). En móvil se apilan verticalmente y el
+   formulario sube (order: -1) para que aparezca primero.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+/* align-items: start evita que el formulario se estire a la altura de la tabla */
+.mgmt-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+/* overflow-x: auto permite scroll horizontal en la tabla si hay poco espacio */
+.mgmt-table-wrap { overflow-x: auto; }
+
+/* ─── Avatar de usuario ──────────────────────────────────────────────────── */
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* Placeholder cuando el usuario no tiene avatar_url:
+   círculo con las iniciales generadas por la función initials() */
+.user-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  border: 1px solid var(--color-primary-border);
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+/* En oscuro: fondo azul translúcido + texto azul claro */
+html.dark .user-avatar-placeholder {
+  background: rgb(37 99 235 / 0.2);
+  border-color: rgb(37 99 235 / 0.4);
+  color: #60a5fa;
+}
+
+.user-info       { display: flex; align-items: center; gap: var(--space-3); }
+.user-info__name { font-weight: 500; color: var(--text-primary); font-size: var(--font-size-sm); }
+.user-info__email{ font-size: var(--font-size-xs); color: var(--text-muted); }
+
+/* ─── Chip de categoría ──────────────────────────────────────────────────── */
+/* El color de fondo se aplica inline desde el componente (background: cat.color).
+   Siempre texto blanco porque los 10 colores de la paleta tienen contraste suficiente. */
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: #fff;
+}
+
+/* ─── Formulario lateral ─────────────────────────────────────────────────── */
+/* sticky: permanece visible al hacer scroll en la tabla larga.
+   top calcula el espacio bajo la navbar para no quedar tapado. */
+.side-form {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+  position: sticky;
+  top: calc(var(--navbar-h) + var(--space-6));
+  transition: background var(--transition-slow), border-color var(--transition-slow);
+}
+
+.side-form__header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-muted);
+}
+
+.side-form__title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.side-form__body {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ─── Selector de color (CategoriesPage) ─────────────────────────────────── */
+.color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.color-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+  outline: none;
+}
+
+.color-swatch:hover {
+  transform: scale(1.2);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.25);
+}
+
+/* Estado activo: doble anillo (inset + outline simulado con box-shadow) */
+.color-swatch--active {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--text-primary);
+}
+
+/* ─── Mensaje de éxito ───────────────────────────────────────────────────── */
+.success-msg {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: #059669;
+  padding: var(--space-2) var(--space-3);
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+  border-radius: var(--radius-md);
+}
+
+html.dark .success-msg {
+  background: rgb(5 150 105 / 0.15);
+  border-color: rgb(5 150 105 / 0.3);
+  color: #34d399;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+/* En tablets: una sola columna; el formulario sube al inicio */
+@media (max-width: 900px) {
+  .mgmt-layout { grid-template-columns: 1fr; }
+  .side-form   { position: static; order: -1; }
+}

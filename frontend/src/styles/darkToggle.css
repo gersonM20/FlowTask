@@ -1,0 +1,191 @@
+/* ═══════════════════════════════════════════════════════════
+   DarkModeToggle — pill animado de tema claro / oscuro
+   ═══════════════════════════════════════════════════════════
+   Estructura:
+     .theme-toggle (pill / pista)
+       .theme-toggle__stars   (estrellas decorativas, solo en oscuro)
+       .theme-toggle__knob    (círculo deslizante)
+         .theme-toggle__icon--moon  (svg luna)
+         .theme-toggle__icon--sun   (div sol con rayos)
+
+   El knob se desplaza con translateX usando una transición
+   cubic-bezier con overshoot (spring bounce) para dar sensación
+   táctil al interruptor.
+   ═══════════════════════════════════════════════════════════ */
+
+/* Pill / pista del toggle */
+.theme-toggle {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  border-radius: 14px; /* pill: radio = mitad de la altura */
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+  background: #e2e8f0; /* gris claro en modo día */
+  transition: background 350ms ease, border-color 350ms ease;
+  flex-shrink: 0;
+  outline: none;
+}
+
+/* Pista iluminada en modo oscuro: azul profundo */
+.theme-toggle--dark {
+  background: #1e3a5f;
+  border-color: #2563eb;
+}
+
+/* Anillo de foco visible solo con teclado (no con ratón) */
+.theme-toggle:focus-visible {
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.35);
+}
+
+/* ─── Knob (círculo deslizante) ─────────────────────────────────────────── */
+.theme-toggle__knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* cubic-bezier(0.34, 1.56, 0.64, 1) produce un overshoot (rebote spring) */
+  transition: transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 350ms ease,
+              box-shadow 350ms ease;
+  will-change: transform; /* sugiere al browser crear una capa compuesta */
+}
+
+/* En modo oscuro: desliza 24px a la derecha (52px - 20px - 3px*2 = 26px, -2 por borde) */
+.theme-toggle--dark .theme-toggle__knob {
+  transform: translateX(24px);
+  background: #0f172a; /* knob oscuro para contrastar con la pista azul */
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.5);
+}
+
+/* ─── Íconos dentro del knob ────────────────────────────────────────────── */
+/* Ambos íconos se superponen (position: absolute; inset: 0);
+   CSS controla cuál es visible mediante opacity + scale + rotate */
+.theme-toggle__icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 250ms ease, transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Luna — visible en modo claro (estado por defecto) */
+.theme-toggle__icon--moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+/* Sol — oculto en modo claro (girado y encogido) */
+.theme-toggle__icon--sun {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+}
+
+/* En modo oscuro: luna desaparece girando, sol aparece */
+.theme-toggle--dark .theme-toggle__icon--moon {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
+}
+
+.theme-toggle--dark .theme-toggle__icon--sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+/* ─── Estrellas decorativas en la pista (solo modo oscuro) ──────────────── */
+.theme-toggle__stars {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden; /* las estrellas no salen del pill */
+  pointer-events: none;
+}
+
+.theme-toggle__star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #93c5fd;
+  transition: opacity 300ms ease;
+  opacity: 0; /* ocultas en modo claro */
+}
+
+/* Se hacen visibles al activar el modo oscuro */
+.theme-toggle--dark .theme-toggle__star { opacity: 1; }
+
+/* Cada estrella tiene posición y timing de animación distintos para naturalidad */
+.theme-toggle__star:nth-child(1) { top: 6px;  left: 8px;  animation: twinkle 2.1s ease-in-out infinite; }
+.theme-toggle__star:nth-child(2) { top: 14px; left: 12px; animation: twinkle 2.8s ease-in-out 0.4s infinite; }
+.theme-toggle__star:nth-child(3) { top: 8px;  left: 16px; animation: twinkle 1.9s ease-in-out 0.9s infinite; }
+
+/* Parpadeo sutil: de opacidad 1 a 0.3 con scale suave */
+@keyframes twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(0.6); }
+}
+
+/* ─── Ícono de sol ──────────────────────────────────────────────────────── */
+/* Core (círculo central) + rays container (gira lentamente) + 8 rayos */
+.sun-icon {
+  position: relative;
+  width: 10px;
+  height: 10px;
+}
+
+.sun-icon__core {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fbbf24;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* El contenedor de rayos gira en 8s para simular el sol rotando */
+.sun-icon__rays {
+  position: absolute;
+  inset: -2px;
+  animation: spin-slow 8s linear infinite;
+}
+
+/* Cada rayo es un rectángulo estrecho; se rota desde el centro del sol */
+.sun-icon__ray {
+  position: absolute;
+  width: 1.5px;
+  height: 3px;
+  background: #fbbf24;
+  border-radius: 1px;
+  left: 50%;
+  top: 0;
+  transform-origin: 50% 7px; /* radio desde el centro del círculo */
+}
+
+/* 8 rayos distribuidos cada 45° */
+.sun-icon__ray:nth-child(1)  { transform: rotate(0deg)   translateX(-50%); }
+.sun-icon__ray:nth-child(2)  { transform: rotate(45deg)  translateX(-50%); }
+.sun-icon__ray:nth-child(3)  { transform: rotate(90deg)  translateX(-50%); }
+.sun-icon__ray:nth-child(4)  { transform: rotate(135deg) translateX(-50%); }
+.sun-icon__ray:nth-child(5)  { transform: rotate(180deg) translateX(-50%); }
+.sun-icon__ray:nth-child(6)  { transform: rotate(225deg) translateX(-50%); }
+.sun-icon__ray:nth-child(7)  { transform: rotate(270deg) translateX(-50%); }
+.sun-icon__ray:nth-child(8)  { transform: rotate(315deg) translateX(-50%); }
+
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+
+/* ─── Ícono de luna (SVG) ───────────────────────────────────────────────── */
+.moon-icon {
+  width: 10px;
+  height: 10px;
+  color: #64748b; /* gris medio para no dominar sobre el knob blanco */
+}

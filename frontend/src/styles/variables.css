@@ -1,72 +1,104 @@
 /* ═══════════════════════════════════════════════════════════
-   Design tokens — all theming lives here
+   Design tokens — paleta profesional y sobria
+   ═══════════════════════════════════════════════════════════
+   Todas las variables se definen aquí y se consumen en los
+   archivos CSS de componentes. Cambiar un color aquí lo
+   actualiza automáticamente en toda la aplicación.
    ═══════════════════════════════════════════════════════════ */
 :root {
-  /* ─ Brand palette ─ */
-  --color-primary:       #6366f1;
-  --color-primary-hover: #4f46e5;
-  --color-primary-light: #e0e7ff;
+  /* ─ Acento principal ─ */
+  --color-primary:        #2563eb;
+  --color-primary-hover:  #1d4ed8;
+  --color-primary-light:  #eff6ff; /* fondo sutil para el item activo de nav */
+  --color-primary-border: #bfdbfe;
 
-  /* ─ Status colors ─ */
-  --color-pending:     #f59e0b;
-  --color-progress:    #3b82f6;
-  --color-completed:   #10b981;
-  --color-cancelled:   #6b7280;
-  --color-overdue:     #ef4444;
+  /* ─ Estado de tareas ─ */
+  --color-pending:    #d97706;
+  --color-progress:   #2563eb;
+  --color-completed:  #059669;
+  --color-cancelled:  #9ca3af;
+  --color-overdue:    #dc2626;
 
-  /* ─ Priority colors ─ */
-  --color-urgent: #ef4444;
-  --color-high:   #f97316;
-  --color-medium: #f59e0b;
-  --color-low:    #6b7280;
+  /* ─ Prioridad (borde izquierdo de TaskCard) ─ */
+  --color-urgent: #dc2626;
+  --color-high:   #ea580c;
+  --color-medium: #d97706;
+  --color-low:    #9ca3af;
 
-  /* ─ Neutral scale (light mode) ─ */
-  --bg-page:      #f1f5f9;
-  --bg-surface:   #ffffff;
-  --bg-muted:     #f8fafc;
-  --border:       #e2e8f0;
-  --text-primary: #0f172a;
-  --text-muted:   #64748b;
-  --text-inverse: #ffffff;
+  /* ─ Escala neutra (modo claro) ─ */
+  --bg-page:       #f1f5f9; /* fondo de la página */
+  --bg-surface:    #ffffff; /* tarjetas, modales, navbar */
+  --bg-muted:      #f8fafc; /* fondos de tabla th, side-form header */
+  --bg-hover:      #f1f5f9; /* hover en filas y botones ghost */
+  --border:        #e2e8f0; /* bordes sutiles */
+  --border-strong: #cbd5e1; /* bordes de inputs y separadores */
+  --text-primary:  #0f172a;
+  --text-secondary:#334155;
+  --text-muted:    #64748b;
+  --text-inverse:  #ffffff; /* texto sobre fondos de color sólido */
 
-  /* ─ Spacing ─ */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
+  /* ─ Espaciado — escala de 4px ─ */
+  --space-1:  0.25rem;  /*  4px */
+  --space-2:  0.5rem;   /*  8px */
+  --space-3:  0.75rem;  /* 12px */
+  --space-4:  1rem;     /* 16px */
+  --space-5:  1.25rem;  /* 20px */
+  --space-6:  1.5rem;   /* 24px */
+  --space-8:  2rem;     /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
 
-  /* ─ Radius ─ */
-  --radius-sm:   0.375rem;
-  --radius-md:   0.5rem;
-  --radius-lg:   0.75rem;
-  --radius-full: 9999px;
+  /* ─ Bordes redondeados ─ */
+  --radius-sm:   0.25rem;  /*  4px */
+  --radius-md:   0.375rem; /*  6px */
+  --radius-lg:   0.5rem;   /*  8px */
+  --radius-xl:   0.75rem;  /* 12px — para cards y modales */
+  --radius-full: 9999px;   /* círculo / pill completo */
 
-  /* ─ Shadows ─ */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  /* ─ Sombras — progresión de muy sutil a prominente ─ */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.08);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.05); /* modal */
 
-  /* ─ Transitions ─ */
-  --transition: 150ms ease;
-  --transition-slow: 300ms ease;
+  /* ─ Tipografía ─ */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Fira Code", "Cascadia Code", monospace; /* para valores hex de color */
+  --font-size-xs:   0.6875rem; /* 11px */
+  --font-size-sm:   0.8125rem; /* 13px */
+  --font-size-base: 0.9375rem; /* 15px */
+  --font-size-lg:   1.0625rem; /* 17px */
+  --font-size-xl:   1.25rem;   /* 20px */
+  --font-size-2xl:  1.5rem;    /* 24px */
 
-  /* ─ Font ─ */
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "Fira Code", "Cascadia Code", monospace;
+  /* ─ Transiciones ─ */
+  --transition:      120ms ease; /* micro-interacciones (hover de botón) */
+  --transition-slow: 250ms ease; /* cambios de tema */
+
+  /* ─ Altura de la navbar — usada en side-form sticky top ─ */
+  --navbar-h: 56px;
 }
 
-/* ─── Dark mode overrides ──────────────────────────────────────────────────── */
-.dark {
-  --bg-page:      #0f172a;
-  --bg-surface:   #1e293b;
-  --bg-muted:     #1e293b;
-  --border:       #334155;
-  --text-primary: #f1f5f9;
-  --text-muted:   #94a3b8;
-  --color-primary-light: #312e81;
+/* ─── Modo oscuro — IMPORTANTE: debe estar en <html>, no en un div hijo ──────
+   Las variables CSS solo se heredan hacia abajo (parent → child), nunca hacia
+   arriba. Si la clase estuviera en .app-root, body y html quedarían con los
+   valores del modo claro y el fondo de la página no cambiaría.
+   App.jsx aplica: document.documentElement.classList.toggle("dark", darkMode)
+   ─────────────────────────────────────────────────────────────────────────── */
+html.dark {
+  --bg-page:       #0f172a;
+  --bg-surface:    #1e293b;
+  --bg-muted:      #1e293b;
+  --bg-hover:      #273549;
+  --border:        #334155;
+  --border-strong: #475569;
+  --text-primary:  #f1f5f9;
+  --text-secondary:#cbd5e1;
+  --text-muted:    #94a3b8;
+  --color-primary-light:  #1e3a5f; /* fondo del nav-link activo en oscuro */
+  --color-primary-border: #1d4ed8;
+  /* Sombras más pronunciadas en oscuro porque hay menos contraste natural */
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
 }

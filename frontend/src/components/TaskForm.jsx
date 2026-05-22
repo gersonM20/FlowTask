@@ -1,30 +1,51 @@
+/**
+ * components/TaskForm.jsx — Modal para crear o editar una tarea
+ *
+ * Modo creación: se abre sin prop `task` (null). El formulario está vacío
+ *   y el primer usuario de la lista queda seleccionado por defecto.
+ * Modo edición: se abre con prop `task`. El useEffect sincroniza los
+ *   valores del formulario con los datos de la tarea recibida.
+ *
+ * Manejo de errores:
+ *  - Los errores del servidor se muestran dentro del modal sin cerrarlo,
+ *    para que el usuario pueda corregir y reintentar.
+ *  - El botón de guardar se deshabilita mientras se envía para evitar doble submit.
+ *
+ * Para extender:
+ *  - Agregar validación de fecha mínima (no permitir due_date en el pasado)
+ *  - Agregar campo de tags o etiquetas adicionales
+ *  - Reemplazar window.confirm por un modal de confirmación personalizado
+ */
+
 import { useState, useEffect } from "react";
 import "../styles/taskForm.css";
 
-// Valores iniciales del formulario (tarea en blanco)
+/** Estado inicial del formulario (tarea en blanco) */
 const EMPTY = {
-  title:       "",
-  description: "",
-  status:      "pending",
-  priority:    "medium",
-  due_date:    "",
-  category_id: "",
-  user_id:     "",
+  title: "", description: "", status: "pending",
+  priority: "medium", due_date: "", category_id: "", user_id: "",
 };
 
-// Modal con formulario para crear o editar una tarea.
-// Si se pasa la prop `task`, el formulario se pre-rellena con sus datos (modo edición).
-// Si no se pasa, el formulario está vacío (modo creación).
+/**
+ * @param {object|null} task       - Tarea a editar, o null para crear una nueva
+ * @param {Array}       categories - Lista de categorías para el select
+ * @param {Array}       users      - Lista de usuarios para el select de asignación
+ * @param {function}    onSave     - Callback async: recibe el payload y guarda
+ * @param {function}    onClose    - Callback para cerrar el modal
+ */
 export default function TaskForm({ task, categories, users, onSave, onClose }) {
   const [form,   setForm]   = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState(null);
 
-  // Cuando cambia la prop `task` (ej. el usuario abre editar otra tarea),
-  // sincronizamos el formulario con los nuevos datos
+  /**
+   * Sincroniza el formulario cada vez que cambia la prop `task`.
+   * Esto cubre el caso de abrir "editar" en dos tareas distintas sin cerrar el modal.
+   * due_date se recorta a YYYY-MM-DD porque el input[type=date] requiere ese formato
+   * y la BD puede devolver un timestamp completo.
+   */
   useEffect(() => {
     if (task) {
-      // Normalizamos due_date al formato YYYY-MM-DD que espera el input[type=date]
       setForm({
         title:       task.title       || "",
         description: task.description || "",
@@ -35,85 +56,78 @@ export default function TaskForm({ task, categories, users, onSave, onClose }) {
         user_id:     task.user_id     || "",
       });
     } else {
-      // En modo creación, asignamos el primer usuario disponible por defecto
+      // En modo creación: asignar el primer usuario disponible como valor por defecto
       setForm({ ...EMPTY, user_id: users[0]?.id || "" });
     }
   }, [task, users]);
 
-  // Handler genérico: actualiza solo el campo correspondiente del estado del formulario
-  const handle = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
+  /** Handler genérico: actualiza solo el campo correspondiente */
+  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // evita recarga de la página
+    e.preventDefault(); // prevenir recarga de página
     setError(null);
     setSaving(true);
     try {
-      // Convertimos strings vacíos a null para no enviar campos vacíos a la BD
-      const payload = {
+      await onSave({
         ...form,
+        // Convertir strings vacíos a null: la BD espera null, no ""
         due_date:    form.due_date    || null,
         category_id: form.category_id || null,
-      };
-      await onSave(payload);
-      onClose(); // cierra el modal solo si el guardado fue exitoso
+      });
+      onClose(); // cerrar el modal solo si el guardado fue exitoso
     } catch (err) {
-      // Mostramos el error del backend dentro del modal, sin cerrarlo
-      setError(err.message);
+      setError(err.message); // mostrar el error del backend sin cerrar el modal
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    // role="dialog" y aria-modal="true" mejoran la accesibilidad del modal
-    <div className="modal-overlay" role="dialog" aria-modal="true" aria-label={task ? "Editar tarea" : "Nueva tarea"}>
+    /* role="dialog" + aria-modal="true" comunica a lectores de pantalla
+       que es un modal que bloquea el contenido detrás */
+    <div className="modal-overlay" role="dialog" aria-modal="true"
+      aria-label={task ? "Editar tarea" : "Nueva tarea"}>
       <div className="modal">
+
         <div className="modal__header">
-          <h2 className="modal__title">{task ? "Editar Tarea" : "Nueva Tarea"}</h2>
-          <button className="modal__close" onClick={onClose} aria-label="Cerrar">✕</button>
+          <h2 className="modal__title">{task ? "Editar tarea" : "Nueva tarea"}</h2>
+          <button className="modal__close" onClick={onClose} aria-label="Cerrar modal">✕</button>
         </div>
 
-        <form className="task-form" onSubmit={handleSubmit}>
-          {/* Mensaje de error del servidor */}
-          {error && <p className="error-message">{error}</p>}
+        <form className="task-form" onSubmit={handleSubmit} noValidate>
+
+          {/* Error del servidor — aparece solo si hay error */}
+          {error && <p className="error-banner">{error}</p>}
 
           <div className="form-group">
-            <label htmlFor="tf-title">Título *</label>
-            <input
-              id="tf-title"
-              type="text"
-              value={form.title}
-              onChange={handle("title")}
-              placeholder="¿Qué hay que hacer?"
-              required
-            />
+            <label className="form-label" htmlFor="tf-title">Título *</label>
+            <input id="tf-title" className="form-input" type="text"
+              value={form.title} onChange={set("title")}
+              placeholder="¿Qué hay que hacer?" required />
           </div>
 
           <div className="form-group">
-            <label htmlFor="tf-desc">Descripción</label>
-            <textarea
-              id="tf-desc"
-              value={form.description}
-              onChange={handle("description")}
-              placeholder="Detalles opcionales…"
-            />
+            <label className="form-label" htmlFor="tf-desc">Descripción</label>
+            <textarea id="tf-desc" className="form-textarea"
+              value={form.description} onChange={set("description")}
+              placeholder="Detalles opcionales…" />
           </div>
 
-          {/* Fila de dos columnas para estado y prioridad */}
+          {/* Estado y prioridad en una fila de dos columnas */}
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="tf-status">Estado</label>
-              <select id="tf-status" value={form.status} onChange={handle("status")}>
+              <label className="form-label" htmlFor="tf-status">Estado</label>
+              <select id="tf-status" className="form-select" value={form.status} onChange={set("status")}>
                 <option value="pending">Pendiente</option>
-                <option value="in_progress">En Progreso</option>
+                <option value="in_progress">En progreso</option>
                 <option value="completed">Completada</option>
                 <option value="cancelled">Cancelada</option>
               </select>
             </div>
-
             <div className="form-group">
-              <label htmlFor="tf-priority">Prioridad</label>
-              <select id="tf-priority" value={form.priority} onChange={handle("priority")}>
+              <label className="form-label" htmlFor="tf-priority">Prioridad</label>
+              <select id="tf-priority" className="form-select" value={form.priority} onChange={set("priority")}>
                 <option value="urgent">Urgente</option>
                 <option value="high">Alta</option>
                 <option value="medium">Media</option>
@@ -122,43 +136,41 @@ export default function TaskForm({ task, categories, users, onSave, onClose }) {
             </div>
           </div>
 
-          {/* Fila de dos columnas para fecha y categoría */}
+          {/* Fecha y categoría en otra fila */}
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="tf-due">Fecha límite</label>
-              <input id="tf-due" type="date" value={form.due_date} onChange={handle("due_date")} />
+              <label className="form-label" htmlFor="tf-due">Fecha límite</label>
+              <input id="tf-due" className="form-input" type="date"
+                value={form.due_date} onChange={set("due_date")} />
             </div>
-
             <div className="form-group">
-              <label htmlFor="tf-category">Categoría</label>
-              <select id="tf-category" value={form.category_id} onChange={handle("category_id")}>
+              <label className="form-label" htmlFor="tf-cat">Categoría</label>
+              <select id="tf-cat" className="form-select" value={form.category_id} onChange={set("category_id")}>
                 <option value="">Sin categoría</option>
-                {categories.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
+                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
           </div>
 
           <div className="form-group">
-            <label htmlFor="tf-user">Asignada a</label>
-            <select id="tf-user" value={form.user_id} onChange={handle("user_id")} required>
+            <label className="form-label" htmlFor="tf-user">Asignada a *</label>
+            <select id="tf-user" className="form-select" value={form.user_id} onChange={set("user_id")} required>
               <option value="">Seleccionar usuario…</option>
-              {users.map(u => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
+              {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
             </select>
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn btn--ghost" onClick={onClose}>
+            {/* Cancelar no hace submit — solo cierra el modal */}
+            <button type="button" className="btn btn--secondary" onClick={onClose}>
               Cancelar
             </button>
-            {/* Deshabilitado mientras se guarda para evitar doble envío */}
+            {/* disabled mientras se guarda para evitar doble envío */}
             <button type="submit" className="btn btn--primary" disabled={saving}>
-              {saving ? "Guardando…" : task ? "Guardar Cambios" : "Crear Tarea"}
+              {saving ? "Guardando…" : task ? "Guardar cambios" : "Crear tarea"}
             </button>
           </div>
+
         </form>
       </div>
     </div>

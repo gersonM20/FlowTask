@@ -1,21 +1,37 @@
+/**
+ * components/SearchBar.jsx — Campo de búsqueda con ícono decorativo
+ *
+ * Componente controlado: no mantiene estado propio, recibe `value` y llama
+ * a `onChange` en cada pulsación de tecla. El debounce vive en el componente
+ * padre para mantener este componente simple y reutilizable.
+ *
+ * El ícono ⌕ está posicionado con `position: absolute` dentro del contenedor
+ * relativo; el padding-left del input lo desplaza para evitar solapamiento.
+ *
+ * Para extender:
+ *  - Agregar un botón "✕" para limpiar el campo cuando value !== ""
+ *  - Agregar atajo de teclado (Ctrl+K / ⌘K) con useEffect + keydown listener
+ */
+
 import "../styles/filters.css";
 
-// Barra de búsqueda controlada.
-// El componente padre (Dashboard) aplica debounce al valor antes de enviarlo a la API,
-// por eso este componente simplemente reporta cada cambio de inmediato.
-export default function SearchBar({ value, onChange }) {
+/**
+ * @param {string}   value        - Texto actual del input (controlado)
+ * @param {function} onChange     - Callback que recibe el string nuevo
+ * @param {string}   [placeholder] - Texto placeholder (default "Buscar…")
+ */
+export default function SearchBar({ value, onChange, placeholder = "Buscar…" }) {
   return (
     <div className="search-bar">
-      {/* Ícono decorativo, oculto para lectores de pantalla */}
-      <span className="search-bar__icon" aria-hidden>🔍</span>
-
+      {/* Ícono decorativo — aria-hidden porque el input ya tiene aria-label */}
+      <span className="search-bar__icon" aria-hidden>⌕</span>
       <input
         className="search-bar__input"
         type="search"
-        placeholder="Buscar tareas…"
+        placeholder={placeholder}
         value={value}
         onChange={e => onChange(e.target.value)}
-        aria-label="Buscar tareas"
+        aria-label="Buscar"
       />
     </div>
   );

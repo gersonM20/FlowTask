@@ -1,126 +1,252 @@
 /* ═══════════════════════════════════════════════════════════
-   Global reset + base styles
+   Reset + estilos base + utilidades compartidas
+   ═══════════════════════════════════════════════════════════
+   Este archivo se importa en main.jsx ANTES que variables.css
+   para que las variables ya estén disponibles aquí.
+   Contiene: reset, shell de la app, botones, badges, tabla,
+   card, loading, empty-state, error-banner y utilidades.
    ═══════════════════════════════════════════════════════════ */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+/* ─── Reset universal ────────────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html {
-  font-size: 16px;
-  scroll-behavior: smooth;
-}
+html { font-size: 16px; scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--bg-page);
+  background: var(--bg-page);
   color: var(--text-primary);
-  line-height: 1.6;
+  line-height: 1.5;
+  /* Suaviza el antialiasing de fuentes en WebKit/Firefox */
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  color: var(--color-primary);
-  text-decoration: none;
-}
+a { color: var(--color-primary); text-decoration: none; }
+/* Restablece font-family e cursor en botones (el browser los sobrescribe por defecto) */
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, select, textarea { font-family: inherit; font-size: var(--font-size-sm); }
 
-button {
-  font-family: inherit;
-  cursor: pointer;
-  border: none;
-  background: none;
-}
-
-input, select, textarea {
-  font-family: inherit;
-  font-size: 0.875rem;
-}
-
-/* ─── Layout shell ─────────────────────────────────────────────────────────── */
+/* ─── Shell de la aplicación ─────────────────────────────────────────────── */
+/* .app-root ocupa toda la altura de la ventana y apila navbar + contenido */
 .app-root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  transition: background-color var(--transition-slow), color var(--transition-slow);
+  transition: background var(--transition-slow), color var(--transition-slow);
 }
 
+/* El contenido principal centra en 1200px y añade padding lateral */
 .app-main {
   flex: 1;
-  padding: var(--space-6) var(--space-4);
-  max-width: 1280px;
+  padding: var(--space-8) var(--space-6);
+  max-width: 1200px;
   margin: 0 auto;
   width: 100%;
 }
 
-/* ─── Utility classes ──────────────────────────────────────────────────────── */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0,0,0,0);
-  white-space: nowrap;
+/* ─── Encabezado de página ──────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: var(--space-8);
+  gap: var(--space-4);
 }
 
+.page-header__text {}
+
+.page-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.page-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
+
+/* ─── Botones ────────────────────────────────────────────────────────────── */
+/* Base: todos los variantes comparten esta clase */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+  height: 36px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: background var(--transition), color var(--transition),
+              border-color var(--transition), box-shadow var(--transition);
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+/* Variantes ── */
+.btn--primary {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+  border-color: var(--color-primary);
+}
+.btn--primary:hover    { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
+.btn--primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn--secondary {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border-color: var(--border-strong);
+}
+.btn--secondary:hover { background: var(--bg-hover); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: transparent;
+}
+.btn--ghost:hover { background: var(--bg-hover); color: var(--text-secondary); }
+
+/* Danger usa rgb transparente en oscuro para no saturar demasiado */
+.btn--danger {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+.btn--danger:hover { background: #fee2e2; }
+
+/* Modificadores de tamaño */
+.btn--sm { height: 30px; padding: 0 var(--space-3); font-size: var(--font-size-xs); }
+.btn--lg { height: 42px; padding: 0 var(--space-6); font-size: var(--font-size-base); }
+
+/* Overrides de tema oscuro */
+html.dark .btn--secondary { background: var(--bg-muted); }
+html.dark .btn--danger    { background: rgb(220 38 38 / 0.15); border-color: rgb(220 38 38 / 0.3); }
+
+/* ─── Badges ─────────────────────────────────────────────────────────────── */
+/* Pequeñas etiquetas de estado/prioridad en uppercase */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
   padding: 2px var(--space-2);
-  border-radius: var(--radius-full);
-  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
   font-weight: 600;
-  text-transform: capitalize;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
-/* Status badges */
-.badge--pending    { background: #fef3c7; color: #92400e; }
-.badge--in_progress{ background: #dbeafe; color: #1e40af; }
-.badge--completed  { background: #d1fae5; color: #065f46; }
-.badge--cancelled  { background: #f3f4f6; color: #374151; }
-.badge--overdue    { background: #fee2e2; color: #991b1b; }
+/* Colores de estado — fondo suave + texto oscuro en modo claro */
+.badge--pending     { background: #fef3c7; color: #92400e; }
+.badge--in_progress { background: #dbeafe; color: #1e40af; }
+.badge--completed   { background: #d1fae5; color: #065f46; }
+.badge--cancelled   { background: #f1f5f9; color: #64748b; }
 
-/* Priority badges */
+/* Colores de prioridad */
 .badge--urgent { background: #fee2e2; color: #991b1b; }
 .badge--high   { background: #ffedd5; color: #9a3412; }
 .badge--medium { background: #fef3c7; color: #92400e; }
-.badge--low    { background: #f3f4f6; color: #374151; }
+.badge--low    { background: #f1f5f9; color: #64748b; }
 
-/* ─── Loading spinner ──────────────────────────────────────────────────────── */
+/* En oscuro: fondo rgb(color / opacidad) para mantener el matiz sin saturar */
+html.dark .badge--pending     { background: rgb(217 119 6 / 0.15);  color: #fbbf24; }
+html.dark .badge--in_progress { background: rgb(37 99 235 / 0.15);  color: #60a5fa; }
+html.dark .badge--completed   { background: rgb(5 150 105 / 0.15);  color: #34d399; }
+html.dark .badge--cancelled   { background: rgb(100 116 139 / 0.15);color: #94a3b8; }
+html.dark .badge--urgent      { background: rgb(220 38 38 / 0.15);  color: #f87171; }
+html.dark .badge--high        { background: rgb(234 88 12 / 0.15);  color: #fb923c; }
+html.dark .badge--medium      { background: rgb(217 119 6 / 0.15);  color: #fbbf24; }
+html.dark .badge--low         { background: rgb(100 116 139 / 0.15);color: #94a3b8; }
+
+/* ─── Tabla base ─────────────────────────────────────────────────────────── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.data-table th {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-muted);
+}
+
+.data-table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+/* Elimina el borde inferior de la última fila para evitar doble línea */
+.data-table tr:last-child td { border-bottom: none; }
+
+.data-table tr:hover td { background: var(--bg-hover); }
+
+/* ─── Card / Panel ───────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden; /* evita que la tabla desborde el border-radius */
+}
+
+.card__header {
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.card__title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card__body { padding: var(--space-6); }
+
+/* ─── Loading ─────────────────────────────────────────────────────────────── */
+/* Spinner circular animado; border-top da el efecto de "arco girando" */
 .spinner {
-  display: inline-block;
-  width: 2rem;
-  height: 2rem;
-  border: 3px solid var(--border);
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
   border-top-color: var(--color-primary);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .loading-screen {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
   padding: var(--space-12);
   color: var(--text-muted);
+  font-size: var(--font-size-sm);
 }
 
-/* ─── Error message ─────────────────────────────────────────────────────────── */
-.error-message {
-  padding: var(--space-4);
-  background: #fee2e2;
-  border: 1px solid #fca5a5;
-  border-radius: var(--radius-md);
-  color: #991b1b;
-  font-size: 0.875rem;
-}
-
-/* ─── Empty state ───────────────────────────────────────────────────────────── */
+/* ─── Estado vacío ────────────────────────────────────────────────────────── */
 .empty-state {
   text-align: center;
   padding: var(--space-12) var(--space-4);
@@ -128,11 +254,57 @@ input, select, textarea {
 }
 
 .empty-state__icon {
-  font-size: 3rem;
-  margin-bottom: var(--space-4);
+  width: 48px;
+  height: 48px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-4);
+  color: var(--text-muted);
+  font-size: 1.25rem;
 }
 
-/* ─── Responsive ────────────────────────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .app-main { padding: var(--space-4) var(--space-3); }
+.empty-state p { font-size: var(--font-size-sm); margin-top: var(--space-2); }
+
+/* ─── Error ───────────────────────────────────────────────────────────────── */
+/* Banner de error: aparece dentro de modales o en la página sin reemplazar el contenido */
+.error-banner {
+  padding: var(--space-3) var(--space-4);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  color: #dc2626;
+  font-size: var(--font-size-sm);
+}
+
+html.dark .error-banner {
+  background: rgb(220 38 38 / 0.1);
+  border-color: rgb(220 38 38 / 0.3);
+  color: #f87171;
+}
+
+/* ─── Dot de color ────────────────────────────────────────────────────────── */
+/* Pequeño círculo usado en StatsCard y chips de categoría */
+.color-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0; /* no se comprime en flex row */
+}
+
+/* ─── sr-only — accesibilidad ─────────────────────────────────────────────── */
+/* Oculta visualmente pero mantiene el elemento para lectores de pantalla */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .app-main { padding: var(--space-5) var(--space-4); }
+  .page-header { flex-direction: column; align-items: flex-start; }
 }

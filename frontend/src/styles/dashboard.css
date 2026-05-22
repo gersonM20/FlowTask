@@ -1,77 +1,82 @@
-/* ─── Stats row ─────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   Dashboard — grid de KPIs, toolbar y lista de tareas
+   ═══════════════════════════════════════════════════════════
+   También lo usa TasksPage (toolbar + lista); se importa en
+   ambas páginas. Las clases .form-* se comparten con taskForm.css
+   a través de global.css (no redefinidas aquí).
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Grid de KPIs ───────────────────────────────────────────────────────── */
+/* 5 columnas iguales para las 5 métricas; se colapsa a 3 y 2 en móvil */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: var(--space-4);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-8);
 }
 
 .stat-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5) var(--space-5);
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow var(--transition);
+}
+
+.stat-card:hover { box-shadow: var(--shadow-sm); }
+
+.stat-card__label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-2);
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--transition), box-shadow var(--transition);
+  align-items: center;
+  gap: var(--space-2);
 }
 
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
+/* Número grande — letter-spacing negativo mejora la legibilidad a este tamaño */
 .stat-card__value {
-  font-size: 2rem;
+  font-size: 1.875rem;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1;
+  letter-spacing: -0.02em;
 }
 
-.stat-card__label {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.stat-card__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-bottom: var(--space-2);
-}
-
-/* ─── Toolbar (search + filters + add) ─────────────────────────────────────── */
+/* ─── Toolbar ────────────────────────────────────────────────────────────── */
+/* flex-wrap permite que los filtros bajen a una segunda línea en pantallas medianas */
 .dashboard-toolbar {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
   align-items: center;
+  gap: var(--space-3);
   margin-bottom: var(--space-5);
+  flex-wrap: wrap;
 }
 
-.dashboard-toolbar__right {
-  margin-left: auto;
-}
+/* Empuja el botón "Limpiar filtros" al extremo derecho */
+.dashboard-toolbar__spacer { flex: 1; }
 
-/* ─── Task list ─────────────────────────────────────────────────────────────── */
+/* ─── Lista de tareas ────────────────────────────────────────────────────── */
+/* Columna vertical con separación uniforme entre TaskCards */
 .task-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
-/* ─── Responsive ────────────────────────────────────────────────────────────── */
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  /* Pasa de 5 a 3 columnas en tablets */
+  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
 @media (max-width: 640px) {
+  /* En móvil: 2 columnas y toolbar vertical */
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
-
-  .dashboard-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .dashboard-toolbar__right { margin-left: 0; }
+  .dashboard-toolbar { flex-direction: column; align-items: stretch; }
+  .dashboard-toolbar__spacer { display: none; }
 }

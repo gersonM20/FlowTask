@@ -1,45 +1,68 @@
+/* ═══════════════════════════════════════════════════════════
+   Filters — barra de búsqueda y selects de filtro
+   ═══════════════════════════════════════════════════════════
+   Estos estilos son compartidos por SearchBar.jsx y
+   TaskFilters.jsx. Ambos componentes se renderizan dentro del
+   .dashboard-toolbar flex que gestiona su alineación.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Barra de búsqueda ──────────────────────────────────────────────────── */
+/* Contenedor relativo para posicionar el ícono ⌕ absolutamente dentro */
 .search-bar {
   position: relative;
-  flex: 1;
-  min-width: 180px;
-  max-width: 320px;
+  min-width: 200px;
+  max-width: 280px;
+  flex: 1; /* crece para llenar el espacio disponible en el toolbar */
 }
 
+/* Ícono posicionado en el lado izquierdo del input, centrado verticalmente */
 .search-bar__icon {
   position: absolute;
   left: var(--space-3);
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
-  font-size: 0.9rem;
-  pointer-events: none;
+  font-size: 0.8rem;
+  pointer-events: none; /* no intercepta clics sobre el input */
+  line-height: 1;
 }
 
 .search-bar__input {
   width: 100%;
-  padding: var(--space-2) var(--space-3) var(--space-2) calc(var(--space-3) + 1.4rem);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  height: 34px;
+  /* padding-left deja espacio para el ícono: space-3 + 1.2rem del ícono */
+  padding: 0 var(--space-3) 0 calc(var(--space-3) + 1.2rem);
   background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
   color: var(--text-primary);
+  font-size: var(--font-size-sm);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .search-bar__input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgb(99 102 241 / 0.15);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.12);
 }
 
+.search-bar__input::placeholder { color: var(--text-muted); }
+
+html.dark .search-bar__input { background: var(--bg-muted); border-color: var(--border); }
+
+/* ─── Select de filtro ───────────────────────────────────────────────────── */
+/* Altura idéntica al search-bar (34px) para alineación uniforme en el toolbar */
 .filter-select {
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  height: 34px;
+  padding: 0 var(--space-3);
   background: var(--bg-surface);
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  transition: border-color var(--transition);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-sans);
   cursor: pointer;
+  transition: border-color var(--transition);
 }
 
 .filter-select:focus {
@@ -47,18 +70,11 @@
   border-color: var(--color-primary);
 }
 
-.btn--add {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  background: var(--color-primary);
-  color: #fff;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  font-weight: 600;
-  transition: background var(--transition);
-  white-space: nowrap;
+html.dark .filter-select {
+  background: var(--bg-muted);
+  border-color: var(--border);
+  color: var(--text-secondary);
 }
 
-.btn--add:hover { background: var(--color-primary-hover); }
+/* El background de option debe setearse explícitamente en oscuro */
+html.dark .filter-select option { background: #1e293b; }

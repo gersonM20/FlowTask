@@ -1,8 +1,20 @@
+/**
+ * hooks/useCategories.js — Carga la lista de categorías
+ *
+ * Las categorías se cargan una sola vez al montar el componente porque
+ * cambian con muy poca frecuencia comparado con las tareas.
+ *
+ * Para extender:
+ *  - Agregar refetch manual si se crean categorías desde el mismo componente
+ *  - Agregar createCategory / deleteCategory si se necesita CRUD inline
+ */
+
 import { useState, useEffect } from "react";
 import { categoriesApi } from "../services/api.js";
 
-// Hook para cargar las categorías disponibles.
-// Las categorías raramente cambian, por eso se cargan una sola vez al montar el componente.
+/**
+ * @returns {{ categories: Array, loading: boolean }}
+ */
 export function useCategories() {
   const [categories, setCategories] = useState([]);
   const [loading,    setLoading]    = useState(true);
@@ -10,9 +22,9 @@ export function useCategories() {
   useEffect(() => {
     categoriesApi.getAll()
       .then(setCategories)
-      .catch(console.error)           // error no crítico: los filtros simplemente quedan vacíos
+      .catch(console.error)           // error no crítico: los selects quedan vacíos
       .finally(() => setLoading(false));
-  }, []); // array vacío = solo se ejecuta al montar el componente
+  }, []); // [] = ejecutar solo al montar, nunca al actualizar
 
   return { categories, loading };
 }

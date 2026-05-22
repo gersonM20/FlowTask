@@ -14,8 +14,10 @@ const express = require("express");
 const router  = express.Router();
 const ctrl    = require("../controllers/usersController");
 
-router.get ("/"   , ctrl.getAllUsers);   // GET  /api/users
-router.get ("/:id", ctrl.getUserById);  // GET  /api/users/:id
-router.post("/"   , ctrl.createUser);   // POST /api/users
+router.get   ("/"   , ctrl.getAllUsers);   // GET    /api/users
+router.get   ("/:id", ctrl.getUserById);  // GET    /api/users/:id
+router.post  ("/"   , ctrl.createUser);   // POST   /api/users
+router.patch ("/:id", ctrl.updateUser);   // PATCH  /api/users/:id
+router.delete("/:id", ctrl.deleteUser);   // DELETE /api/users/:id
 
 module.exports = router;

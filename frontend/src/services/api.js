@@ -105,8 +105,14 @@ export const categoriesApi = {
 
 export const usersApi = {
   /** Lista todos los usuarios con su conteo de tareas */
-  getAll:  ()     => request("/users"),
+  getAll:  ()         => request("/users"),
 
   /** Crea un usuario. Requiere name y email */
-  create:  (data) => request("/users", { method: "POST", body: JSON.stringify(data) }),
+  create:  (data)     => request("/users",       { method: "POST",   body: JSON.stringify(data) }),
+
+  /** Actualización parcial: nombre, email y/o avatar_url */
+  update:  (id, data) => request(`/users/${id}`, { method: "PATCH",  body: JSON.stringify(data) }),
+
+  /** Elimina un usuario (las tareas asignadas quedan con user_id = null) */
+  remove:  (id)       => request(`/users/${id}`, { method: "DELETE" }),
 };

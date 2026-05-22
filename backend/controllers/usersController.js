@@ -92,4 +92,67 @@ async function createUser(req, res, next) {
   }
 }
 
-module.exports = { getAllUsers, getUserById, createUser };
+// ─── PATCH /api/users/:id ─────────────────────────────────────────────────────
+
+/**
+ * Actualización parcial de un usuario. Solo modifica los campos enviados.
+ * El email se normaliza a minúsculas igual que en createUser.
+ * Devuelve 404 si el id no existe, 409 si el email ya pertenece a otro usuario.
+ */
+async function updateUser(req, res, next) {
+  try {
+    const allowed = ["name", "email", "avatar_url"];
+    const fields  = [];
+    const values  = [];
+
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) {
+        fields.push(`${key} = $${fields.length + 1}`);
+        const val = req.body[key];
+        values.push(key === "email" ? val.trim().toLowerCase() : val);
+      }
+    }
+
+    if (!fields.length) {
+      return res.status(400).json({ error: "No se envió ningún campo para actualizar" });
+    }
+
+    values.push(req.params.id); // último placeholder para el WHERE
+    const { rows } = await pool.query(
+      `UPDATE users SET ${fields.join(", ")}, updated_at = NOW()
+       WHERE id = $${values.length}
+       RETURNING id, name, email, avatar_url, created_at`,
+      values
+    );
+
+    if (!rows.length) return res.status(404).json({ error: "Usuario no encontrado" });
+    res.json(rows[0]);
+  } catch (err) {
+    if (err.code === "23505") {
+      return res.status(409).json({ error: "Ya existe un usuario con ese correo electrónico" });
+    }
+    next(err);
+  }
+}
+
+// ─── DELETE /api/users/:id ────────────────────────────────────────────────────
+
+/**
+ * Elimina un usuario por su UUID.
+ * Las tareas asignadas se eliminan en cascada
+ * (comportamiento ON DELETE CASCADE definido en init.sql).
+ */
+async function deleteUser(req, res, next) {
+  try {
+    const { rowCount } = await pool.query(
+      "DELETE FROM users WHERE id = $1",
+      [req.params.id]
+    );
+    if (!rowCount) return res.status(404).json({ error: "Usuario no encontrado" });
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getAllUsers, getUserById, createUser, updateUser, deleteUser };

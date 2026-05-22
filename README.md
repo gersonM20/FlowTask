@@ -6,16 +6,6 @@ Dashboard de gestión de tareas construido para demostrar dominio real de JavaSc
 
 ---
 
-## Capturas de pantalla
-
-> _Dashboard (modo claro)_
-> ![Dashboard claro](docs/screenshot-light.png)
-
-> _Dashboard (modo oscuro)_
-> ![Dashboard oscuro](docs/screenshot-dark.png)
-
----
-
 ## Tecnologías utilizadas
 
 | Capa       | Tecnología                           |

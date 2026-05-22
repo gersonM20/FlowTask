@@ -1,6 +1,6 @@
 # Task Manager — Portafolio Full-Stack
 
-Sistema de gestión de tareas construido construido con JavaScript ES6+, HTML5, CSS3 y SQL. Implementa una arquitectura REST clásica
+Sistema de gestión de tareas construido con JavaScript ES6+, HTML5, CSS3 y SQL. Implementa una arquitectura REST clásica
 con separación clara de responsabilidades en cada capa.
 
 ---

@@ -1,5 +1,8 @@
 const { Pool } = require("pg");
 
+// Pool de conexiones a PostgreSQL.
+// Un Pool reutiliza conexiones abiertas en lugar de abrir una nueva por cada query,
+// lo que mejora el rendimiento en aplicaciones con múltiples peticiones simultáneas.
 const pool = new Pool({
   host:     process.env.DB_HOST     || "localhost",
   port:     parseInt(process.env.DB_PORT || "5432"),
@@ -8,15 +11,16 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD || "taskpass123",
 });
 
+// Escucha errores inesperados en clientes del pool (ej. caída de la DB mientras la app corre)
 pool.on("error", (err) => {
-  console.error("Unexpected PostgreSQL client error:", err.message);
+  console.error("Error inesperado en el cliente de PostgreSQL:", err.message);
 });
 
-// Verify connectivity at startup
+// Verificación de conectividad al arrancar el servidor
 pool.query("SELECT 1").then(() => {
-  console.log("✅  Connected to PostgreSQL");
+  console.log("✅  Conectado a PostgreSQL");
 }).catch((err) => {
-  console.error("❌  Could not connect to PostgreSQL:", err.message);
+  console.error("❌  No se pudo conectar a PostgreSQL:", err.message);
 });
 
 module.exports = pool;

@@ -1,5 +1,8 @@
 const pool = require("../db/connection");
 
+// GET /api/categories
+// Devuelve todas las categorías junto con la cantidad de tareas asociadas.
+// El LEFT JOIN asegura que categorías sin tareas también aparezcan (con task_count = 0).
 async function getAllCategories(_req, res, next) {
   try {
     const { rows } = await pool.query(
@@ -15,15 +18,19 @@ async function getAllCategories(_req, res, next) {
   }
 }
 
+// POST /api/categories
+// Crea una nueva categoría. Solo el nombre es obligatorio.
 async function createCategory(req, res, next) {
   try {
     const { name, color, icon } = req.body;
-    if (!name) return res.status(400).json({ error: "name is required" });
+
+    if (!name) return res.status(400).json({ error: "El campo name es obligatorio" });
 
     const { rows } = await pool.query(
       "INSERT INTO categories (name, color, icon) VALUES ($1, $2, $3) RETURNING *",
       [name, color || "#6366f1", icon || null]
     );
+
     res.status(201).json(rows[0]);
   } catch (err) {
     next(err);

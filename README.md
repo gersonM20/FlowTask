@@ -1,84 +1,84 @@
-# Task Manager — Full-Stack Portfolio Project
+# Task Manager — Proyecto de Portafolio Full-Stack
 
-A full-stack task management dashboard built to demonstrate real-world proficiency in JavaScript, HTML5, CSS3, and SQL.
+Dashboard de gestión de tareas construido para demostrar dominio real de JavaScript, HTML5, CSS3 y SQL.
 
 **Stack:** React + Vite · Node.js + Express · PostgreSQL · Docker
 
 ---
 
-## Screenshots
+## Capturas de pantalla
 
-> _Dashboard (light mode)_
-> ![Dashboard light](docs/screenshot-light.png)
+> _Dashboard (modo claro)_
+> ![Dashboard claro](docs/screenshot-light.png)
 
-> _Dashboard (dark mode)_
-> ![Dashboard dark](docs/screenshot-dark.png)
-
----
-
-## Tech Stack
-
-| Layer      | Technology                          |
-|------------|-------------------------------------|
-| Frontend   | React 18, Vite 5, CSS3 (no UI lib)  |
-| Backend    | Node.js 18+, Express 4              |
-| Database   | PostgreSQL 16                       |
-| Dev infra  | Docker + docker-compose             |
+> _Dashboard (modo oscuro)_
+> ![Dashboard oscuro](docs/screenshot-dark.png)
 
 ---
 
-## Quick Start
+## Tecnologías utilizadas
 
-### 1. Clone and configure environment
+| Capa       | Tecnología                           |
+|------------|--------------------------------------|
+| Frontend   | React 18, Vite 5, CSS3 (sin lib UI)  |
+| Backend    | Node.js 18+, Express 4               |
+| Base de datos | PostgreSQL 16                     |
+| Infraestructura | Docker + docker-compose         |
+
+---
+
+## Inicio rápido
+
+### 1. Clonar y configurar el entorno
 
 ```bash
-git clone <repo-url>
+git clone <url-del-repo>
 cd task-manager
-cp .env.example .env          # adjust values if needed
+cp .env.example .env          # ajustar valores si es necesario
 ```
 
-### 2. Start PostgreSQL (Docker)
+### 2. Iniciar PostgreSQL (Docker)
 
 ```bash
 docker-compose up -d
 ```
 
-This creates the database, runs `init.sql` (tables + seed data), and exposes PostgreSQL on **port 5432**.
+Esto crea la base de datos, ejecuta `init.sql` (tablas + datos de prueba) y expone PostgreSQL en el **puerto 5432**.
 
-### 3. Start the backend
+### 3. Iniciar el backend
 
 ```bash
 cd backend
 npm install
-npm run dev          # runs on http://localhost:3001
+npm run dev          # corre en http://localhost:3001
 ```
 
-### 4. Start the frontend
+### 4. Iniciar el frontend
 
 ```bash
 cd frontend
 npm install
-npm run dev          # runs on http://localhost:5173
+npm run dev          # corre en http://localhost:5173
 ```
 
-Open **http://localhost:5173** in your browser.
+Abrir **http://localhost:5173** en el navegador.
 
 ---
 
-## Project Structure
+## Estructura del proyecto
 
 ```
 task-manager/
-├── docker-compose.yml          # PostgreSQL service
-├── .env.example                # Environment variables template
+├── docker-compose.yml          # Servicio de PostgreSQL
+├── .env.example                # Plantilla de variables de entorno
 ├── .gitignore
 │
 ├── backend/
-│   ├── server.js               # Express entry point
+│   ├── server.js               # Punto de entrada de Express
 │   ├── package.json
 │   ├── db/
-│   │   ├── connection.js       # pg Pool
-│   │   └── init.sql            # Schema, indexes, seed + complex queries
+│   │   ├── connection.js       # Pool de conexiones pg
+│   │   └── init.sql            # Esquema, índices, seed y queries complejas
 │   ├── routes/
 │   │   ├── tasks.js
 │   │   ├── categories.js
@@ -108,9 +108,9 @@ task-manager/
         │   ├── useCategories.js
         │   └── useDebounce.js
         ├── services/
-        │   └── api.js          # Typed fetch wrapper
+        │   └── api.js          # Wrapper de fetch tipado
         └── styles/
-            ├── variables.css   # CSS custom properties
+            ├── variables.css   # Custom properties CSS
             ├── global.css
             ├── navbar.css
             ├── dashboard.css
@@ -121,22 +121,22 @@ task-manager/
 
 ---
 
-## API Endpoints
+## Endpoints de la API
 
-### Tasks
+### Tareas
 
-| Method   | Endpoint              | Description                            |
-|----------|-----------------------|----------------------------------------|
-| `GET`    | `/api/tasks`          | List all tasks (supports query filters)|
-| `GET`    | `/api/tasks/stats`    | KPI counts (total, pending, overdue…)  |
-| `GET`    | `/api/tasks/:id`      | Get a single task                      |
-| `POST`   | `/api/tasks`          | Create a task                          |
-| `PATCH`  | `/api/tasks/:id`      | Update task fields (partial update)    |
-| `DELETE` | `/api/tasks/:id`      | Delete a task                          |
+| Método   | Endpoint              | Descripción                                  |
+|----------|-----------------------|----------------------------------------------|
+| `GET`    | `/api/tasks`          | Listar tareas (soporta filtros por query)    |
+| `GET`    | `/api/tasks/stats`    | Conteos KPI (total, pendientes, vencidas…)   |
+| `GET`    | `/api/tasks/:id`      | Obtener una tarea por ID                     |
+| `POST`   | `/api/tasks`          | Crear una tarea                              |
+| `PATCH`  | `/api/tasks/:id`      | Actualizar campos (actualización parcial)    |
+| `DELETE` | `/api/tasks/:id`      | Eliminar una tarea                           |
 
-**Query parameters for `GET /api/tasks`:**
+**Parámetros de query para `GET /api/tasks`:**
 
-| Param         | Example          |
+| Parámetro     | Ejemplo          |
 |---------------|------------------|
 | `status`      | `pending`        |
 | `priority`    | `high`           |
@@ -144,29 +144,29 @@ task-manager/
 | `user_id`     | `<uuid>`         |
 | `search`      | `pipeline`       |
 
-### Categories
+### Categorías
 
-| Method | Endpoint            | Description           |
-|--------|---------------------|-----------------------|
-| `GET`  | `/api/categories`   | List all categories   |
-| `POST` | `/api/categories`   | Create a category     |
+| Método | Endpoint            | Descripción               |
+|--------|---------------------|---------------------------|
+| `GET`  | `/api/categories`   | Listar todas las categorías |
+| `POST` | `/api/categories`   | Crear una categoría       |
 
-### Users
+### Usuarios
 
-| Method | Endpoint        | Description       |
-|--------|-----------------|-------------------|
-| `GET`  | `/api/users`    | List all users    |
-| `GET`  | `/api/users/:id`| Get a single user |
+| Método | Endpoint        | Descripción              |
+|--------|-----------------|--------------------------|
+| `GET`  | `/api/users`    | Listar todos los usuarios |
+| `GET`  | `/api/users/:id`| Obtener un usuario por ID |
 
-### Health
+### Health check
 
-| Method | Endpoint       |
+| Método | Endpoint       |
 |--------|----------------|
 | `GET`  | `/api/health`  |
 
 ---
 
-## Database Schema
+## Esquema de la base de datos
 
 ```sql
 users        (id uuid PK, name, email UNIQUE, avatar_url, created_at, updated_at)
@@ -176,32 +176,32 @@ tasks        (id uuid PK, title, description, status, priority, due_date,
               created_at, updated_at)
 ```
 
-See `backend/db/init.sql` for indexes, triggers, seed data, and three annotated complex SQL queries (JOINs, GROUP BY, subqueries).
+Ver `backend/db/init.sql` para índices, triggers, datos de prueba y tres queries SQL complejas comentadas (JOINs, GROUP BY, subconsultas).
 
 ---
 
-## Features
+## Funcionalidades
 
-- **Dashboard KPIs** — total, pending, in-progress, completed, overdue counts
-- **Real-time search** — debounced full-text search on task titles
-- **Multi-filter** — filter by status, priority, and category simultaneously
-- **CRUD** — create, edit, delete tasks via modal form
-- **One-click complete** — toggle task status directly from the list
-- **Priority accent** — colored left border per priority level
-- **Dark mode** — full dark theme via CSS custom properties
-- **Responsive** — mobile-first layout with CSS Grid + Flexbox
-- **Smooth animations** — card slide-in, modal fade-in
+- **KPIs en el dashboard** — conteos de total, pendientes, en progreso, completadas y vencidas
+- **Búsqueda en tiempo real** — búsqueda full-text con debounce sobre el título de las tareas
+- **Filtros múltiples** — filtrar por estado, prioridad y categoría simultáneamente
+- **CRUD completo** — crear, editar y eliminar tareas desde un formulario modal
+- **Completar con un clic** — alternar el estado de la tarea directamente desde la lista
+- **Acento por prioridad** — borde izquierdo de color según nivel de prioridad
+- **Modo oscuro** — tema oscuro completo mediante CSS custom properties
+- **Diseño responsive** — layout mobile-first con CSS Grid + Flexbox
+- **Animaciones suaves** — slide-in en tarjetas, fade-in en el modal
 
 ---
 
-## Environment Variables
+## Variables de entorno
 
-| Variable      | Default         | Description              |
-|---------------|-----------------|--------------------------|
-| `DB_HOST`     | `localhost`     | PostgreSQL host           |
-| `DB_PORT`     | `5432`          | PostgreSQL port           |
-| `DB_NAME`     | `taskmanager`   | Database name             |
-| `DB_USER`     | `taskuser`      | Database user             |
-| `DB_PASSWORD` | `taskpass123`   | Database password         |
-| `PORT`        | `3001`          | Express server port       |
-| `VITE_API_URL`| `/api`          | Frontend API base URL     |
+| Variable      | Valor por defecto | Descripción                |
+|---------------|-------------------|----------------------------|
+| `DB_HOST`     | `localhost`       | Host de PostgreSQL          |
+| `DB_PORT`     | `5432`            | Puerto de PostgreSQL        |
+| `DB_NAME`     | `taskmanager`     | Nombre de la base de datos  |
+| `DB_USER`     | `taskuser`        | Usuario de la base de datos |
+| `DB_PASSWORD` | `taskpass123`     | Contraseña de la base de datos |
+| `PORT`        | `3001`            | Puerto del servidor Express |
+| `VITE_API_URL`| `/api`            | URL base de la API en el frontend |

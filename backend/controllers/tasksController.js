@@ -1,26 +1,33 @@
 const pool = require("../db/connection");
 
-// GET /api/tasks?status=&priority=&category_id=&search=&user_id=
+// GET /api/tasks
+// Devuelve todas las tareas con información de usuario y categoría.
+// Acepta filtros opcionales por query string: status, priority, category_id, user_id, search.
 async function getAllTasks(req, res, next) {
   try {
     const { status, priority, category_id, search, user_id } = req.query;
 
-    // Build query dynamically based on provided filters
+    // Construimos la cláusula WHERE de forma dinámica para evitar SQL injection.
+    // Cada condición usa un placeholder ($1, $2...) que pg reemplaza de forma segura.
     const conditions = [];
     const values     = [];
-    let   idx        = 1;
+    let   idx        = 1; // índice del placeholder actual
 
-    if (status)      { conditions.push(`t.status = $${idx++}`);       values.push(status); }
-    if (priority)    { conditions.push(`t.priority = $${idx++}`);     values.push(priority); }
-    if (category_id) { conditions.push(`t.category_id = $${idx++}`);  values.push(category_id); }
-    if (user_id)     { conditions.push(`t.user_id = $${idx++}`);      values.push(user_id); }
-    if (search)      {
+    if (status)      { conditions.push(`t.status = $${idx++}`);      values.push(status); }
+    if (priority)    { conditions.push(`t.priority = $${idx++}`);    values.push(priority); }
+    if (category_id) { conditions.push(`t.category_id = $${idx++}`); values.push(category_id); }
+    if (user_id)     { conditions.push(`t.user_id = $${idx++}`);     values.push(user_id); }
+
+    // Búsqueda full-text usando el índice GIN creado en init.sql
+    if (search) {
       conditions.push(`to_tsvector('english', t.title) @@ plainto_tsquery('english', $${idx++})`);
       values.push(search);
     }
 
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
+    // JOIN con users (siempre) y categories (LEFT JOIN porque la categoría es opcional)
+    // ORDER BY prioridad descendente (urgent primero) y luego por fecha de vencimiento
     const { rows } = await pool.query(
       `SELECT
          t.id, t.title, t.description, t.status, t.priority,
@@ -49,11 +56,14 @@ async function getAllTasks(req, res, next) {
 
     res.json(rows);
   } catch (err) {
+    // Pasamos el error al manejador global definido en server.js
     next(err);
   }
 }
 
 // GET /api/tasks/stats
+// Devuelve conteos agrupados por estado para los KPIs del dashboard.
+// Usa FILTER para calcular múltiples agregaciones en una sola pasada sobre la tabla.
 async function getTaskStats(req, res, next) {
   try {
     const { rows } = await pool.query(
@@ -76,6 +86,7 @@ async function getTaskStats(req, res, next) {
 }
 
 // GET /api/tasks/:id
+// Devuelve una tarea específica enriquecida con datos de usuario y categoría.
 async function getTaskById(req, res, next) {
   try {
     const { rows } = await pool.query(
@@ -89,7 +100,7 @@ async function getTaskById(req, res, next) {
       [req.params.id]
     );
 
-    if (!rows.length) return res.status(404).json({ error: "Task not found" });
+    if (!rows.length) return res.status(404).json({ error: "Tarea no encontrada" });
     res.json(rows[0]);
   } catch (err) {
     next(err);
@@ -97,12 +108,14 @@ async function getTaskById(req, res, next) {
 }
 
 // POST /api/tasks
+// Crea una nueva tarea. Los campos obligatorios son title y user_id.
 async function createTask(req, res, next) {
   try {
     const { title, description, status, priority, due_date, user_id, category_id } = req.body;
 
-    if (!title)   return res.status(400).json({ error: "title is required" });
-    if (!user_id) return res.status(400).json({ error: "user_id is required" });
+    // Validaciones básicas de entrada
+    if (!title)   return res.status(400).json({ error: "El campo title es obligatorio" });
+    if (!user_id) return res.status(400).json({ error: "El campo user_id es obligatorio" });
 
     const { rows } = await pool.query(
       `INSERT INTO tasks (title, description, status, priority, due_date, user_id, category_id)
@@ -111,14 +124,15 @@ async function createTask(req, res, next) {
       [
         title,
         description  || null,
-        status       || "pending",
-        priority     || "medium",
+        status       || "pending",   // valor por defecto si no se envía
+        priority     || "medium",    // valor por defecto si no se envía
         due_date     || null,
         user_id,
         category_id  || null,
       ]
     );
 
+    // 201 Created con el objeto recién creado
     res.status(201).json(rows[0]);
   } catch (err) {
     next(err);
@@ -126,11 +140,13 @@ async function createTask(req, res, next) {
 }
 
 // PATCH /api/tasks/:id
+// Actualización parcial: solo se actualizan los campos que vengan en el body.
+// Esto evita sobreescribir campos que el cliente no quiso modificar.
 async function updateTask(req, res, next) {
   try {
     const { title, description, status, priority, due_date, category_id } = req.body;
 
-    // Build SET clause dynamically (only provided fields)
+    // Construimos el SET dinámicamente igual que el WHERE en getAllTasks
     const fields = [];
     const values = [];
     let   idx    = 1;
@@ -140,7 +156,7 @@ async function updateTask(req, res, next) {
     if (status      !== undefined) {
       fields.push(`status = $${idx++}`);
       values.push(status);
-      // Auto-set completed_at when marking complete
+      // Registramos automáticamente cuándo se completó/descompletó la tarea
       if (status === "completed") {
         fields.push(`completed_at = NOW()`);
       } else {
@@ -151,8 +167,9 @@ async function updateTask(req, res, next) {
     if (due_date    !== undefined) { fields.push(`due_date = $${idx++}`);    values.push(due_date); }
     if (category_id !== undefined) { fields.push(`category_id = $${idx++}`); values.push(category_id); }
 
-    if (!fields.length) return res.status(400).json({ error: "No fields to update" });
+    if (!fields.length) return res.status(400).json({ error: "No se enviaron campos a actualizar" });
 
+    // El id de la tarea va al final del array de valores
     values.push(req.params.id);
 
     const { rows } = await pool.query(
@@ -160,7 +177,7 @@ async function updateTask(req, res, next) {
       values
     );
 
-    if (!rows.length) return res.status(404).json({ error: "Task not found" });
+    if (!rows.length) return res.status(404).json({ error: "Tarea no encontrada" });
     res.json(rows[0]);
   } catch (err) {
     next(err);
@@ -168,6 +185,7 @@ async function updateTask(req, res, next) {
 }
 
 // DELETE /api/tasks/:id
+// Elimina una tarea y devuelve 204 No Content si tuvo éxito.
 async function deleteTask(req, res, next) {
   try {
     const { rowCount } = await pool.query(
@@ -175,7 +193,9 @@ async function deleteTask(req, res, next) {
       [req.params.id]
     );
 
-    if (!rowCount) return res.status(404).json({ error: "Task not found" });
+    if (!rowCount) return res.status(404).json({ error: "Tarea no encontrada" });
+
+    // 204: eliminación exitosa, sin cuerpo en la respuesta
     res.status(204).send();
   } catch (err) {
     next(err);
